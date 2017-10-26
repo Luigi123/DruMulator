@@ -74,7 +74,8 @@ function infer(labeledLines) {
   let uniqueKeys = []
   labeledLines.forEach(labeledLine => {
     const label = labeledLine.label
-    if(typeof label !== "undefined") {
+    const type = labeledLine.type
+    if(type === "notes" && typeof label !== "undefined") {
       if(uniqueKeys.indexOf(label) === -1) {
         uniqueKeys.push(label)
       }
@@ -87,6 +88,9 @@ function infer(labeledLines) {
     const currentLine = labeledLines[i]
     if(currentLine.type === "notes") {
       currentSession.push(currentLine)
+    }
+    if(currentLine.type === "section") {
+      // nothing to do here yet
     }
     if(currentLine.type === "divisor") {
       // verify if there are all keys in the current section
@@ -111,7 +115,7 @@ function infer(labeledLines) {
       })
       if(!allLinesSameLength) {
         // TODO: handle errors better
-        throw Error("nope :(")
+        // throw Error("nope :(")
       }
       if(currentSession[0]) {
         currentSession[0].line.split("").forEach(char => {
@@ -159,7 +163,7 @@ function parseLabels(lines) {
   let labeledLines = []
   return lines.map(line => {
     const split = line.split("|")
-    const label = split[0].replace(":", "")
+    let label = split[0].replace(":", "")
     split.shift() // remove label
     const content = split.join("|")
     if(label === "" && content === "") {
@@ -167,6 +171,14 @@ function parseLabels(lines) {
         type: "divisor",
       }
     }
+    label = label.trim()
+    if(line.length > 0 && line.match(/^([A-Za-z]|[-_ ])+$/)) {
+      return {
+        type: "section",
+        label
+      }
+    }
+    if(label === "H") { label = "HH" }
     return {
       type: "notes",
       label,
@@ -216,6 +228,7 @@ class Renderer {
     this.imageFiles = {}
     this.keys.forEach(key => {
       const padData = PAD_DATA[key]
+      console.log(key)
       let audio = new Audio(padData.fileName)
       let image = new Image()
       audio.mediaGroup = "drumulator"
@@ -349,6 +362,8 @@ let isPlaying = false
 function playClick() {
   const tab = document.querySelector("#tabArea").innerHTML
   const songData = parse(tab)
+  console.log("returned")
+  console.log(songData)
 
   const canvas = document.querySelector("#canvas")
   const context = canvas.getContext("2d")
