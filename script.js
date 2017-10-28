@@ -66,13 +66,17 @@ function parse(str) {
     return
   }
   const infered = infer(labeled)
-  const data = buildData(infered)
-  return data
+  const data = buildData(infered.notes)
+  return {
+    notes: data,
+    sections: infered.sections
+  }
 }
 
 function infer(labeledLines) {
   let uniqueKeys = []
-  labeledLines.forEach(labeledLine => {
+  let sections = []
+  labeledLines.forEach((labeledLine, index) => {
     const label = labeledLine.label
     const type = labeledLine.type
     if(type === "notes" && typeof label !== "undefined") {
@@ -80,10 +84,24 @@ function infer(labeledLines) {
         uniqueKeys.push(label)
       }
     }
+    else if(type === "section") {
+      const exists = sections.filter(section => section.name === label).length > 0
+      if(exists) {
+        // insert section into current position
+      }
+      else {
+        sections.push({
+          name: labeledLine.label,
+          startLine: index,
+          startIndex: -1,
+        })
+      }
+    }
   })
 
   let inferedData = []
   let currentSession = []
+  let currentNoteIndex = 0
   for(let i = 0; i < labeledLines.length; i += 1) {
     const currentLine = labeledLines[i]
     if(currentLine.type === "notes") {
@@ -134,7 +152,10 @@ function infer(labeledLines) {
       currentSession = []
     }
   }
-  return inferedData
+  return {
+    notes: inferedData,
+    sections,
+  }
 }
 
 function buildData(labeledLines) {
@@ -193,22 +214,49 @@ function parseLabels(lines) {
 
 let renderer
 
+class Countdown {
+  constructor(context, width, height, time, onDone, interval) {
+    this.context = context
+    this.time = time
+    this.onDone = onDone
+    this.interval = interval || 1000
+    this.width = width
+    this.height = height
+  }
+
+  start() {
+    if(this.time === 0) {
+      this.onDone()
+    }
+    else {
+      this.context.clearRect(0, 0, this.width, this.height)
+      this.context.fillStyle = "#000"
+      this.context.fillText(this.time, 10, 20)
+      this.time -= 1
+      setTimeout(() => { this.start() }, this.interval)
+    }
+  }
+}
+
 class Renderer {
-  constructor(context, songData, width, height) {
+  constructor(context, songData, sectionLabels, width, height) {
     // params
     this.context = context
     this.songData = songData
     this.width = width
     this.height = height
+    this.sectionLabels = sectionLabels
 
     // contants
     this.timeElapsed = -1
-    this.noteEvery = 7
-    this.movementSpeed = 10 // pixels per frame
+    this.noteEvery = Infinity // lol
+    this.movementSpeed = 0 // pixels per frame
     this.padLocation = this.height - 80 // on the y axis
     this.paused = false
+    this.shouldRender = true
 
     // note stuff
+    this.currentSectionId = 0
     this.keys = Object.keys(songData)
     this.noteCount = songData[this.keys[0]].length
     this.laneCount = this.keys.length
@@ -228,7 +276,6 @@ class Renderer {
     this.imageFiles = {}
     this.keys.forEach(key => {
       const padData = PAD_DATA[key]
-      console.log(key)
       let audio = new Audio(padData.fileName)
       let image = new Image()
       audio.mediaGroup = "drumulator"
@@ -241,16 +288,35 @@ class Renderer {
     })
   }
 
+  setTimerToPreview() {
+    let disabledNotes = 0
+    let timer = 0
+    while(disabledNotes === 0) {
+      timer += 1
+      this.update(true)
+      this.notes.forEach(lane => {
+        lane.forEach(note => {
+          if(note.content && note.active && note.position >= (this.padLocation - (this.movementSpeed * 2))) {
+            disabledNotes += 1
+          }
+        })
+      })
+    }
+    this.render()
+  }
+
   calculateBoardPosition() {
     const totalSize = this.keys.length * this.padSize
     const spaceRemaining = this.width - totalSize
     this.leftPadding = Math.floor(spaceRemaining / 2)
   }
 
-  update() {
+  update(forceUpdate) {
 
     if(this.paused) {
-      return
+      if(!forceUpdate) {
+        return
+      }
     }
 
     this.timeElapsed += 1
@@ -259,6 +325,15 @@ class Renderer {
     if(this.timeElapsed % this.noteEvery === 0) {
       let index = Math.floor(this.timeElapsed / this.noteEvery)
       if(index < this.noteCount) {
+        // update section label
+        const nextSection = this.sectionLabels[this.currentSectionId + 1]
+        if(nextSection) {
+          if(nextSection.startLine >= index) {
+            this.currentSectionId += 1
+          }
+        }
+
+        // insert notes
         this.keys.forEach((k, keyIndex) => {
           const content = this.songData[k][index] === "-" ? "" : this.songData[k][index]
           this.notes[keyIndex].push({
@@ -276,7 +351,6 @@ class Renderer {
         if(note.position < this.height) {
           note.position += this.movementSpeed
         }
-
         // check if note is at the bottom (should play sound and blink)
         if(note.content && note.active && note.position >= this.padLocation) {
           note.active = false
@@ -296,6 +370,9 @@ class Renderer {
   }
 
   render() {
+    if(!this.shouldRender) {
+      return
+    }
     this.context.clearRect(0, 0, this.width, this.height)
     this.context.fillStyle = "#000"
 
@@ -347,6 +424,12 @@ class Renderer {
       })
     })
 
+    // section name
+    // it's wrong, so I commented it out
+    // const sectionName = this.sectionLabels[this.currentSectionId].name
+    // this.context.fillStyle = "#000"
+    // this.context.fillText(sectionName, 10, 20)
+
     // right-most bar
     let x = (this.leftPadding + (this.laneCount * this.padSize))
     this.context.fillStyle = "#000"
@@ -358,21 +441,51 @@ class Renderer {
   setup and stuff
 */
 let isPlaying = false
+let context
+let canvas
 
-function playClick() {
+function readContext() {
+  canvas = document.querySelector("#canvas")
+  context = canvas.getContext("2d")
+}
+
+function startPlaying() {
+  if(!context) {
+    readContext()
+  }
   const tab = document.querySelector("#tabArea").innerHTML
   const songData = parse(tab)
-  console.log("returned")
-  console.log(songData)
 
-  const canvas = document.querySelector("#canvas")
-  const context = canvas.getContext("2d")
-  renderer = new Renderer(context, songData, canvas.width, canvas.height)
+  renderer = new Renderer(context, songData.notes, songData.sections, canvas.width, canvas.height)
+
+  const frequency = document.querySelector("#iptFrequency").value
+  const speed = document.querySelector("#iptSpeed").value
+
+  renderer.noteEvery = parseInt(frequency, 10)
+  renderer.movementSpeed = parseInt(speed, 10)
 
   if(!isPlaying) {
     isPlaying = true
     renderLoop()
   }
+}
+
+function playClick() {
+  // startPlaying()
+  if(isPlaying) {
+    renderer.paused = true
+    renderer.shouldRender = false
+  }
+  if(!context) {
+    readContext()
+  }
+  const countDown = new Countdown(context, canvas.width, canvas.height, 3, () => { startPlaying() })
+  countDown.start()
+}
+
+function previewClick() {
+  startPlaying()
+  renderer.setTimerToPreview()
 }
 
 function pauseClick() {
