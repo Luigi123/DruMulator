@@ -1,3 +1,72 @@
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
 /*
   C = Crash
   HH = Hi-Hat
@@ -10,54 +79,151 @@
   o = loose hi-hats
 */
 
+const parse = __webpack_require__(1)
+const PAD_DATA = __webpack_require__(2)
+const Countdown = __webpack_require__(3)
+const Renderer = __webpack_require__(4)
+
 /*
-  data and stuff
+  rendering
 */
 
-const PAD_DATA = {
-  C: {
-    fileName: "./mp3/cymbal.mp3",
-    volume: 0.02,
-    color: "#a00",
-    lightColor: "#faa",
-    // imageName: "./images/cymbal.png"
-  },
-  B: {
-    fileName: "./mp3/bass.mp3",
-    volume: 0.2,
-    color: "#0a0",
-    lightColor: "#afa",
-    // imageName: "./images/foot.png"
-  },
-  HH: {
-    fileName: "./mp3/hihat.mp3",
-    volume: 0.06,
-    color: "#00a",
-    lightColor: "#aaf",
-  },
-  S: {
-    fileName: "./mp3/snare.mp3",
-    volume: 0.05,
-    color: "#aa0",
-    lightColor: "#ffa",
-  },
-  FT: {
-    fileName: "./mp3/snare.mp3",
-    volume: 0.05,
-    color: "#0aa",
-    lightColor: "#aff",
-  },
-  T: {
-    fileName: "./mp3/snare.mp3",
-    volume: 0.05,
-    color: "#000",
-    lightColor: "#aaa",
-  },
+let renderer
+
+/*
+  setup and stuff
+*/
+let isPlaying = false
+let context
+let canvas
+
+function readContext() {
+  canvas = document.querySelector("#canvas")
+  context = canvas.getContext("2d")
+}
+
+function startPlaying() {
+  if(!context) {
+    readContext()
+  }
+  const tab = document.querySelector("#tabArea").innerHTML
+  const songData = parse(tab)
+
+  renderer = new Renderer(context, songData.notes, songData.sections, canvas.width, canvas.height)
+
+  const frequency = document.querySelector("#iptFrequency").value
+  const speed = document.querySelector("#iptSpeed").value
+
+  renderer.noteEvery = parseInt(frequency, 10)
+  renderer.movementSpeed = parseInt(speed, 10)
+
+  if(!isPlaying) {
+    isPlaying = true
+    renderLoop()
+  }
 }
 
 /*
-  document parsing
+  SCREEN & GAME STATE MANAGEMENT
 */
+
+const SCREEN_STATES = {
+  MENU: 0,
+  PREVIEW: 1,
+  PLAYING: 2,
+  // PAUSED: 3,
+}
+
+const SCREENS = {
+  // to be read on load
+  menu: "",
+  play: ""
+}
+
+let settings = {
+  state: SCREEN_STATES.MENU,
+  setState: (newState) => {
+    settings.state = newState
+    updateDivs()
+  }
+}
+
+function updateDivs() {
+  if(settings.state === SCREEN_STATES.MENU) {
+    if(renderer) {
+      renderer.paused = true
+      renderer.shouldRender = false
+    }
+    SCREENS.menu.classList.remove("hide")
+    SCREENS.play.classList.add("hide")
+  }
+  else if(settings.state === SCREEN_STATES.PREVIEW) {
+    SCREENS.menu.classList.remove("hide")
+    SCREENS.play.classList.remove("hide")
+    SCREENS.play.classList.add("preview")
+  }
+  else if(settings.state === SCREEN_STATES.PLAYING) {
+    SCREENS.menu.classList.add("hide")
+    SCREENS.play.classList.remove("hide")
+    SCREENS.play.classList.remove("preview")
+  }
+}
+
+function playClick() {
+  settings.setState(SCREEN_STATES.PLAYING)
+  if(isPlaying) {
+    renderer.paused = true
+    renderer.shouldRender = false
+  }
+  if(!context) {
+    readContext()
+  }
+  const time = parseInt(document.querySelector("#iptCountdown").value, 10)
+  const countDown = new Countdown(context, canvas.width, canvas.height, time, () => { startPlaying() })
+  countDown.start()
+}
+
+function previewClick() {
+  settings.setState(SCREEN_STATES.PREVIEW)
+  startPlaying()
+  renderer.setTimerToPreview()
+}
+
+function pauseClick() {
+  if(!isPlaying) {
+    return
+  }
+  renderer.paused = !renderer.paused
+}
+
+function backClick() {
+  settings.setState(SCREEN_STATES.MENU)
+}
+
+function renderLoop() {
+  renderer.update()
+  renderer.render()
+  window.requestAnimationFrame(renderLoop)
+}
+
+/*
+  onLoad
+*/
+
+window.onload = () => {
+  SCREENS.menu = document.querySelector(".menu-screen")
+  SCREENS.play = document.querySelector(".play-screen")
+
+  document.querySelector("#btnPreview").addEventListener("click", previewClick)
+  document.querySelector("#btnPlay").addEventListener("click", playClick)
+  document.querySelector("#btnBack").addEventListener("click", backClick)
+}
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+
 function parse(str) {
   const lines = str.split("\n")
   const labeled = parseLabels(lines)
@@ -208,13 +374,60 @@ function parseLabels(lines) {
   })
 }
 
-/*
-  rendering
-*/
+module.exports = parse
 
-let renderer
 
-class Countdown {
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = {
+  C: {
+    fileName: "./mp3/cymbal.mp3",
+    volume: 0.02,
+    color: "#a00",
+    lightColor: "#faa",
+    // imageName: "./images/cymbal.png"
+  },
+  B: {
+    fileName: "./mp3/bass.mp3",
+    volume: 0.2,
+    color: "#0a0",
+    lightColor: "#afa",
+    // imageName: "./images/foot.png"
+  },
+  HH: {
+    fileName: "./mp3/hihat.mp3",
+    volume: 0.06,
+    color: "#00a",
+    lightColor: "#aaf",
+  },
+  S: {
+    fileName: "./mp3/snare.mp3",
+    volume: 0.05,
+    color: "#aa0",
+    lightColor: "#ffa",
+  },
+  FT: {
+    fileName: "./mp3/snare.mp3",
+    volume: 0.05,
+    color: "#0aa",
+    lightColor: "#aff",
+  },
+  T: {
+    fileName: "./mp3/snare.mp3",
+    volume: 0.05,
+    color: "#000",
+    lightColor: "#aaa",
+  },
+}
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = class Countdown {
   constructor(context, width, height, time, onDone, interval) {
     this.context = context
     this.time = time
@@ -239,7 +452,14 @@ class Countdown {
   }
 }
 
-class Renderer {
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const PAD_DATA = __webpack_require__(2)
+
+module.exports = class Renderer {
   constructor(context, songData, sectionLabels, width, height) {
     // params
     this.context = context
@@ -438,127 +658,6 @@ class Renderer {
   }
 }
 
-/*
-  setup and stuff
-*/
-let isPlaying = false
-let context
-let canvas
 
-function readContext() {
-  canvas = document.querySelector("#canvas")
-  context = canvas.getContext("2d")
-}
-
-function startPlaying() {
-  if(!context) {
-    readContext()
-  }
-  const tab = document.querySelector("#tabArea").innerHTML
-  const songData = parse(tab)
-
-  renderer = new Renderer(context, songData.notes, songData.sections, canvas.width, canvas.height)
-
-  const frequency = document.querySelector("#iptFrequency").value
-  const speed = document.querySelector("#iptSpeed").value
-
-  renderer.noteEvery = parseInt(frequency, 10)
-  renderer.movementSpeed = parseInt(speed, 10)
-
-  if(!isPlaying) {
-    isPlaying = true
-    renderLoop()
-  }
-}
-
-/*
-  SCREEN & GAME STATE MANAGEMENT
-*/
-
-const SCREEN_STATES = {
-  MENU: 0,
-  PREVIEW: 1,
-  PLAYING: 2,
-  // PAUSED: 3,
-}
-
-const SCREENS = {
-  // to be read on load
-  menu: "",
-  play: ""
-}
-
-let settings = {
-  state: SCREEN_STATES.MENU,
-  setState: (newState) => {
-    settings.state = newState
-    updateDivs()
-  }
-}
-
-function updateDivs() {
-  if(settings.state === SCREEN_STATES.MENU) {
-    if(renderer) {
-      renderer.paused = true
-      renderer.shouldRender = false
-    }
-    SCREENS.menu.classList.remove("hide")
-    SCREENS.play.classList.add("hide")
-  }
-  else if(settings.state === SCREEN_STATES.PREVIEW) {
-    SCREENS.menu.classList.remove("hide")
-    SCREENS.play.classList.remove("hide")
-    SCREENS.play.classList.add("preview")
-  }
-  else if(settings.state === SCREEN_STATES.PLAYING) {
-    SCREENS.menu.classList.add("hide")
-    SCREENS.play.classList.remove("hide")
-    SCREENS.play.classList.remove("preview")
-  }
-}
-
-function playClick() {
-  settings.setState(SCREEN_STATES.PLAYING)
-  if(isPlaying) {
-    renderer.paused = true
-    renderer.shouldRender = false
-  }
-  if(!context) {
-    readContext()
-  }
-  const time = parseInt(document.querySelector("#iptCountdown").value, 10)
-  const countDown = new Countdown(context, canvas.width, canvas.height, time, () => { startPlaying() })
-  countDown.start()
-}
-
-function previewClick() {
-  settings.setState(SCREEN_STATES.PREVIEW)
-  startPlaying()
-  renderer.setTimerToPreview()
-}
-
-function pauseClick() {
-  if(!isPlaying) {
-    return
-  }
-  renderer.paused = !renderer.paused
-}
-
-function backClick() {
-  settings.setState(SCREEN_STATES.MENU)
-}
-
-function renderLoop() {
-  renderer.update()
-  renderer.render()
-  window.requestAnimationFrame(renderLoop)
-}
-
-/*
-  onLoad
-*/
-
-window.onload = () => {
-  SCREENS.menu = document.querySelector(".menu-screen")
-  SCREENS.play = document.querySelector(".play-screen")
-}
+/***/ })
+/******/ ]);
