@@ -470,8 +470,54 @@ function startPlaying() {
   }
 }
 
+/*
+  SCREEN & GAME STATE MANAGEMENT
+*/
+
+const SCREEN_STATES = {
+  MENU: 0,
+  PREVIEW: 1,
+  PLAYING: 2,
+  // PAUSED: 3,
+}
+
+const SCREENS = {
+  // to be read on load
+  menu: "",
+  play: ""
+}
+
+let settings = {
+  state: SCREEN_STATES.MENU,
+  setState: (newState) => {
+    settings.state = newState
+    updateDivs()
+  }
+}
+
+function updateDivs() {
+  if(settings.state === SCREEN_STATES.MENU) {
+    if(renderer) {
+      renderer.paused = true
+      renderer.shouldRender = false
+    }
+    SCREENS.menu.classList.remove("hide")
+    SCREENS.play.classList.add("hide")
+  }
+  else if(settings.state === SCREEN_STATES.PREVIEW) {
+    SCREENS.menu.classList.remove("hide")
+    SCREENS.play.classList.remove("hide")
+    SCREENS.play.classList.add("preview")
+  }
+  else if(settings.state === SCREEN_STATES.PLAYING) {
+    SCREENS.menu.classList.add("hide")
+    SCREENS.play.classList.remove("hide")
+    SCREENS.play.classList.remove("preview")
+  }
+}
+
 function playClick() {
-  // startPlaying()
+  settings.setState(SCREEN_STATES.PLAYING)
   if(isPlaying) {
     renderer.paused = true
     renderer.shouldRender = false
@@ -484,6 +530,7 @@ function playClick() {
 }
 
 function previewClick() {
+  settings.setState(SCREEN_STATES.PREVIEW)
   startPlaying()
   renderer.setTimerToPreview()
 }
@@ -495,8 +542,21 @@ function pauseClick() {
   renderer.paused = !renderer.paused
 }
 
+function backClick() {
+  settings.setState(SCREEN_STATES.MENU)
+}
+
 function renderLoop() {
   renderer.update()
   renderer.render()
   window.requestAnimationFrame(renderLoop)
+}
+
+/*
+  onLoad
+*/
+
+window.onload = () => {
+  SCREENS.menu = document.querySelector(".menu-screen")
+  SCREENS.play = document.querySelector(".play-screen")
 }

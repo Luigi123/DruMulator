@@ -6,17 +6,12 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <script src="script.js"></script>
-  <style>
-    #canvas {
-      border: 1px solid #ccc;
-    }
-    textarea {
-      font-family: Courier New, Courier, monospace;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <textarea id="tabArea" cols="100" rows="10">
+  <h1 class="title">DruMulator</h1>
+  <div class="menu-screen">
+    <textarea id="tabArea" cols="100" rows="10">
 INTRO
 HH:|--o---o---o-----|
 S:|f---f---f---f---|
@@ -196,34 +191,39 @@ B:|o--o---o-o-o--o-|o--o---o-o-o--o-|o--o---o-o-o--o-|o--o---o-o-o--o-|
 C:|X---------------|
 B:|o---------------|
 
-</textarea>
-  <div>
-    <p>
+  </textarea>
+    <div>
+      <p>
+        <label>
+          Speed:
+          <input value="10" type="number" id="iptSpeed">
+        </label>
+      </p>
+      <p>
       <label>
-        Speed:
-        <input value="10" type="number" id="iptSpeed">
+        Note frequency:
+        <input value="7" type="number" id="iptFrequency">
       </label>
-    </p>
-    <p>
-    <label>
-      Note frequency:
-      <input value="7" type="number" id="iptFrequency">
-    </label>
-    </p>
+      </p>
+    </div>
+    <button onclick="previewClick()">Preview</button>
+    <div>
+      <p>
+        <label>
+          Countdown:
+          <input value="3" type="number" id="iptCountdown"> seconds
+        </label>
+      </p>
+    </div>
+    <br />
+    <button onclick="playClick()">play</button>
+    <button onclick="pauseClick()">pause (toggle)</button>
+    <br />
   </div>
-  <button onclick="previewClick()">Preview</button>
-  <div>
-    <p>
-      <label>
-        Countdown:
-        <input value="3" type="number" id="iptCountdown"> seconds
-      </label>
-    </p>
+  <div class="play-screen hide">
+    <button onclick="backClick()">Back</button>
+    <br />
+    <canvas id="canvas" width="1280" height="720"></canvas>
   </div>
-  <br />
-  <button onclick="playClick()">play</button>
-  <button onclick="pauseClick()">pause (toggle)</button>
-  <br />
-  <canvas id="canvas" width="1280" height="720"></canvas>
 </body>
 </html>
