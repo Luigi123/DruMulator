@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
-  <script src="script.js"></script>
+  <script src="dist/bundle.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -206,7 +206,7 @@ B:|o---------------|
       </label>
       </p>
     </div>
-    <button onclick="previewClick()">Preview</button>
+    <button id="btnPreview">Preview</button>
     <div>
       <p>
         <label>
@@ -215,11 +215,11 @@ B:|o---------------|
         </label>
       </p>
     </div>
-    <button onclick="playClick()">Start playing</button>
+    <button id="btnPlay">Start playing</button>
     <br />
   </div>
   <div class="play-screen hide">
-    <button onclick="backClick()">Back</button>
+    <button id="btnBack">Back</button>
     <br />
     <canvas id="canvas" width="1280" height="720"></canvas>
   </div>

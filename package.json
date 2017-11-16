@@ -1,0 +1,27 @@
+{
+  "name": "drumulator",
+  "version": "1.0.0",
+  "description": "Drum simulator",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/Luigi123/DrumMulator.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/Luigi123/DrumMulator/issues"
+  },
+  "homepage": "https://gitlab.com/Luigi123/DrumMulator#README",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^3.8.1"
+  }
+}
