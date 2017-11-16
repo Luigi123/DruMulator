@@ -110,7 +110,7 @@ module.exports = class Renderer {
     // update existing notes
     this.notes.forEach((laneInfo, laneIndex) => {
       laneInfo.forEach(note => {
-        if(note.position < this.height) {
+        if(note.position <= this.height) {
           note.position += this.movementSpeed
         }
         // check if note is at the bottom (should play sound and blink)
@@ -177,11 +177,16 @@ module.exports = class Renderer {
     this.notes.forEach((laneInfo, laneIndex) => {
       const key = this.keys[laneIndex]
       laneInfo.forEach(note => {
+        if(note.position >= this.height) {
+          return
+        }
         if(note.content) { // empty string evaluates as false lol
           let x = (this.leftPadding + (laneIndex * this.padSize)) + 10
           const color = PAD_DATA[key].color
           this.context.fillStyle = color
-          this.context.fillRect(x, note.position, this.padSize - 20, 5)
+          this.context.fillRect(x, note.position - 20, this.padSize - 20, 20)
+          this.context.fillStyle = "#fff"
+          this.context.fillText(note.content, (x + (this.padSize / 2) - 18), note.position - 3)
         }
       })
     })

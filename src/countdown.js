@@ -10,6 +10,7 @@ module.exports = class Countdown {
 
   start() {
     if(this.time <= 0) {
+      this.context.font = "25px Arial"
       this.onDone()
     }
     else {
