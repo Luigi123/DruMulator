@@ -230,8 +230,9 @@ class Countdown {
     }
     else {
       this.context.clearRect(0, 0, this.width, this.height)
+      this.context.font = "50px Arial"
       this.context.fillStyle = "#000"
-      this.context.fillText(this.time, 10, 20)
+      this.context.fillText(this.time, this.width / 2, this.height / 2)
       this.time -= 1
       setTimeout(() => { this.start() }, this.interval)
     }

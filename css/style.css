@@ -33,3 +33,10 @@ h1.title {
 .play-screen canvas {
   width: 100%;
 }
+
+@media screen and (min-width: 750px) {
+  .play-screen, .menu-scren {
+    width: 50%;
+    margin-left: 25%;
+  }
+}
