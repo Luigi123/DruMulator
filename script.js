@@ -225,7 +225,7 @@ class Countdown {
   }
 
   start() {
-    if(this.time === 0) {
+    if(this.time <= 0) {
       this.onDone()
     }
     else {
@@ -526,7 +526,8 @@ function playClick() {
   if(!context) {
     readContext()
   }
-  const countDown = new Countdown(context, canvas.width, canvas.height, 3, () => { startPlaying() })
+  const time = parseInt(document.querySelector("#iptCountdown").value, 10)
+  const countDown = new Countdown(context, canvas.width, canvas.height, time, () => { startPlaying() })
   countDown.start()
 }
 
