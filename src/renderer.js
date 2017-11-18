@@ -150,10 +150,29 @@ module.exports = class Renderer {
       let color = "#fff"
       if(timer > 0) {
         this.colorTimers[laneIndex] -= 1
-        color = PAD_DATA[key].lightColor
+        color = PAD_DATA[key].color
       }
+      this.context.globalAlpha = 0.3
       this.context.fillStyle = color
       this.context.fillRect(x, 0, w, this.height)
+      this.context.globalAlpha = 1
+    })
+
+    // images (foot, crash, etc)
+    this.keys.forEach((key, laneIndex) => {
+      const image = this.imageFiles[key]
+      if(image) {
+        const x = (this.leftPadding + (laneIndex * this.padSize)) + 25
+        let y = 0
+        while(true) {
+          this.context.drawImage(image, x, y)
+          y += 70 // default image height (couldn't make image.height work)
+          y += 20 // some padding
+          if(y >= this.height) {
+            break
+          }
+        }
+      }
     })
 
     // background (bars dividing lanes)
@@ -165,14 +184,6 @@ module.exports = class Renderer {
 
     // pad
     this.context.fillRect(0, this.padLocation, this.width, 10)
-    this.keys.forEach((key, laneIndex) => {
-      const image = this.imageFiles[key]
-      if(image) {
-        const y = this.padLocation - (image.height / 2)
-        const x = (this.leftPadding + (laneIndex * this.padSize)) + 10
-        this.context.drawImage(image, x, y)
-      }
-    })
 
     // notes
     this.notes.forEach((laneInfo, laneIndex) => {

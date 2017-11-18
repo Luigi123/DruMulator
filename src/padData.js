@@ -11,7 +11,7 @@ module.exports = {
     volume: 0.2,
     color: "#0a0",
     lightColor: "#afa",
-    // imageName: "./images/foot.png"
+    imageName: "./images/foot.png"
   },
   HH: {
     fileName: "./mp3/hihat.mp3",
