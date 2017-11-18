@@ -13,6 +13,7 @@ module.exports = class Renderer {
     this.timeElapsed = -1
     this.noteEvery = Infinity // lol
     this.movementSpeed = 0 // pixels per frame
+    this.renderCharacters = true
     this.padLocation = this.height - 80 // on the y axis
     this.paused = false
     this.shouldRender = true
@@ -184,9 +185,14 @@ module.exports = class Renderer {
           let x = (this.leftPadding + (laneIndex * this.padSize)) + 10
           const color = PAD_DATA[key].color
           this.context.fillStyle = color
-          this.context.fillRect(x, note.position - 20, this.padSize - 20, 20)
-          this.context.fillStyle = "#fff"
-          this.context.fillText(note.content, (x + (this.padSize / 2) - 18), note.position - 3)
+          if(this.renderCharacters) {
+            this.context.fillRect(x, note.position - 20, this.padSize - 20, 20)
+            this.context.fillStyle = "#fff"
+            this.context.fillText(note.content, (x + (this.padSize / 2) - 18), note.position - 3)
+          }
+          else {
+            this.context.fillRect(x, note.position - 8, this.padSize - 20, 8)
+          }
         }
       })
     })

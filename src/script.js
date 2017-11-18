@@ -44,9 +44,13 @@ function startPlaying() {
 
   const frequency = document.querySelector("#iptFrequency").value
   const speed = document.querySelector("#iptSpeed").value
+  const chars = document.querySelector("#chkCharacters")
 
   renderer.noteEvery = parseInt(frequency, 10)
   renderer.movementSpeed = parseInt(speed, 10)
+  renderer.renderCharacters = chars.checked
+
+  console.log(chars.checked)
 
   if(!isPlaying) {
     isPlaying = true
