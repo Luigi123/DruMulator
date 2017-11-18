@@ -50,8 +50,6 @@ function startPlaying() {
   renderer.movementSpeed = parseInt(speed, 10)
   renderer.renderCharacters = chars.checked
 
-  console.log(chars.checked)
-
   if(!isPlaying) {
     isPlaying = true
     renderLoop()

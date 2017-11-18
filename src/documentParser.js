@@ -1,4 +1,6 @@
 
+const BEST_ORDER = ["C", "HH", "S", "B", "T", "FT"]
+
 function parse(str) {
   const lines = str.split("\n")
   const labeled = parseLabels(lines)
@@ -8,8 +10,9 @@ function parse(str) {
   }
   const infered = infer(labeled)
   const data = buildData(infered.notes)
+  const orderedData = reorder(data)
   return {
-    notes: data,
+    notes: orderedData,
     sections: infered.sections
   }
 }
@@ -147,6 +150,19 @@ function parseLabels(lines) {
       line: content,
     }
   })
+}
+
+function reorder(noteData) {
+  const keys = Object.keys(noteData)
+  let reordered = []
+  BEST_ORDER.forEach(item => {
+    const index = keys.indexOf(item) !== -1
+    if(index !== -1) {
+      console.log(item)
+      reordered[item] = noteData[item]
+    }
+  })
+  return reordered
 }
 
 module.exports = parse
