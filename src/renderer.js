@@ -132,31 +132,16 @@ module.exports = class Renderer {
     })
   }
 
-  render() {
-    if(!this.shouldRender) {
-      return
-    }
-    this.context.clearRect(0, 0, this.width, this.height)
-    this.context.fillStyle = "#000"
-
+  renderBackground() {
     // left-most bar
     this.context.fillRect(this.leftPadding, 0, 5, this.height)
 
-    // hit colors
-    this.colorTimers.forEach((timer, laneIndex) => {
-      const x = this.leftPadding + (laneIndex * this.padSize)
-      const w = this.padSize
-      const key = this.keys[laneIndex]
-      let color = "#fff"
-      if(timer > 0) {
-        this.colorTimers[laneIndex] -= 1
-        color = PAD_DATA[key].color
-      }
-      this.context.globalAlpha = 0.3
-      this.context.fillStyle = color
-      this.context.fillRect(x, 0, w, this.height)
-      this.context.globalAlpha = 1
-    })
+    // background (bars dividing lanes)
+    this.context.fillStyle = "#000"
+    for(let i = 0; i < this.laneCount; i++) {
+      let x = this.leftPadding + (i * this.padSize)
+      this.context.fillRect(x, 0, 5, this.height)
+    }
 
     // images (foot, crash, etc)
     this.keys.forEach((key, laneIndex) => {
@@ -175,15 +160,34 @@ module.exports = class Renderer {
       }
     })
 
-    // background (bars dividing lanes)
-    this.context.fillStyle = "#000"
-    for(let i = 0; i < this.laneCount; i++) {
-      let x = this.leftPadding + (i * this.padSize)
-      this.context.fillRect(x, 0, 5, this.height)
-    }
-
     // pad
     this.context.fillRect(0, this.padLocation, this.width, 10)
+  }
+
+  render() {
+    if(!this.shouldRender) {
+      return
+    }
+    this.context.clearRect(0, 0, this.width, this.height)
+    this.context.fillStyle = "#000"
+
+    this.renderBackground()
+
+    // hit colors
+    this.colorTimers.forEach((timer, laneIndex) => {
+      const x = this.leftPadding + (laneIndex * this.padSize)
+      const w = this.padSize
+      const key = this.keys[laneIndex]
+      let color = "#fff"
+      if(timer > 0) {
+        this.colorTimers[laneIndex] -= 1
+        color = PAD_DATA[key].color
+      }
+      this.context.globalAlpha = 0.3
+      this.context.fillStyle = color
+      this.context.fillRect(x, 0, w, this.height)
+      this.context.globalAlpha = 1
+    })
 
     // notes
     this.notes.forEach((laneInfo, laneIndex) => {
