@@ -4,14 +4,18 @@ module.exports = {
     volume: 0.02,
     color: "#a00",
     lightColor: "#faa",
-    // imageName: "./images/cymbal.png"
+    imageName: "./images/cymbal.png",
+    width: 70,
+    height: 70,
   },
   B: {
     fileName: "./mp3/bass.mp3",
     volume: 0.2,
     color: "#0a0",
     lightColor: "#afa",
-    imageName: "./images/foot.png"
+    imageName: "./images/foot.png",
+    width: 30,
+    height: 70,
   },
   HH: {
     fileName: "./mp3/hihat.mp3",

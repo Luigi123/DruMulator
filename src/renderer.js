@@ -147,11 +147,11 @@ module.exports = class Renderer {
     this.keys.forEach((key, laneIndex) => {
       const image = this.imageFiles[key]
       if(image) {
-        const x = (this.leftPadding + (laneIndex * this.padSize)) + 25
+        const x = (this.leftPadding + (laneIndex * this.padSize)) + 7
         let y = 0
         while(true) {
           this.context.drawImage(image, x, y)
-          y += 70 // default image height (couldn't make image.height work)
+          y += this.imageFiles[key].height
           y += 20 // some padding
           if(y >= this.height) {
             break
