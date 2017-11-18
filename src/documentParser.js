@@ -158,7 +158,6 @@ function reorder(noteData) {
   BEST_ORDER.forEach(item => {
     const index = keys.indexOf(item) !== -1
     if(index !== -1) {
-      console.log(item)
       reordered[item] = noteData[item]
     }
   })

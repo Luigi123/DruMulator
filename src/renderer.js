@@ -17,6 +17,7 @@ module.exports = class Renderer {
     this.padLocation = this.height - 80 // on the y axis
     this.paused = false
     this.shouldRender = true
+    this.backgroundImageData
 
     // note stuff
     this.currentSectionId = 0
@@ -132,7 +133,17 @@ module.exports = class Renderer {
     })
   }
 
-  renderBackground() {
+  renderBackground(forceRerender) {
+    this.context.clearRect(0, 0, this.width, this.height)
+    this.context.fillStyle = "#000"
+
+    if(this.backgroundImageData && !forceRerender) {
+      this.context.putImageData(this.backgroundImageData, 0, 0)
+      return
+    }
+
+    let writeToBuffer = true
+
     // left-most bar
     this.context.fillRect(this.leftPadding, 0, 5, this.height)
 
@@ -147,6 +158,10 @@ module.exports = class Renderer {
     this.keys.forEach((key, laneIndex) => {
       const image = this.imageFiles[key]
       if(image) {
+        if(image.width === 0) {
+          writeToBuffer = false
+          image.onload = () => { this.renderBackground(true) }
+        }
         const x = (this.leftPadding + (laneIndex * this.padSize)) + 7
         let y = 0
         while(true) {
@@ -162,14 +177,17 @@ module.exports = class Renderer {
 
     // pad
     this.context.fillRect(0, this.padLocation, this.width, 10)
+
+    // save the background image to buffer to prevent rerendering
+    if(!this.backgroundImageData && writeToBuffer) {
+      this.backgroundImageData = this.context.getImageData(0, 0, this.width, this.height)
+    }
   }
 
   render() {
     if(!this.shouldRender) {
       return
     }
-    this.context.clearRect(0, 0, this.width, this.height)
-    this.context.fillStyle = "#000"
 
     this.renderBackground()
 
