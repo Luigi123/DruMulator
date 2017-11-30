@@ -156,7 +156,7 @@ function reorder(noteData) {
   const keys = Object.keys(noteData)
   let reordered = []
   BEST_ORDER.forEach(item => {
-    const index = keys.indexOf(item) !== -1
+    const index = keys.indexOf(item)
     if(index !== -1) {
       reordered[item] = noteData[item]
     }
