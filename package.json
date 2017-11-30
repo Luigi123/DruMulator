@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
     "watch": "webpack --watch",
-    "serve": "ws",
+    "serve": "cd dist && ws",
     "start": "concurrently 'npm run watch' 'npm run serve'"
   },
   "repository": {
