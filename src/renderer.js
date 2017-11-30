@@ -155,25 +155,30 @@ module.exports = class Renderer {
     }
 
     // images (foot, crash, etc)
-    this.keys.forEach((key, laneIndex) => {
-      const image = this.imageFiles[key]
-      if(image) {
-        if(image.width === 0) {
-          writeToBuffer = false
-          image.onload = () => { this.renderBackground(true) }
-        }
-        const x = (this.leftPadding + (laneIndex * this.padSize)) + 7
-        let y = 0
-        while(true) {
-          this.context.drawImage(image, x, y)
-          y += this.imageFiles[key].height
-          y += 20 // some padding
-          if(y >= this.height) {
-            break
+    if(window.location.protocol === "file:") {
+      this.context.fillText("Can't render images on 'file:' protocol", 40, this.height - 30)
+    }
+    else {
+      this.keys.forEach((key, laneIndex) => {
+        const image = this.imageFiles[key]
+        if(image) {
+          if(image.width === 0) {
+            writeToBuffer = false
+            image.onload = () => { this.renderBackground(true) }
+          }
+          const x = (this.leftPadding + (laneIndex * this.padSize)) + 7
+          let y = 0
+          while(true) {
+            this.context.drawImage(image, x, y)
+            y += this.imageFiles[key].height
+            y += 20 // some padding
+            if(y >= this.height) {
+              break
+            }
           }
         }
-      }
-    })
+      })
+    }
 
     // pad
     this.context.fillRect(0, this.padLocation, this.width, 10)
