@@ -1,0 +1,42 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.hide {
+  display: none;
+}
+
+#canvas {
+  border: 1px solid #ccc;
+}
+textarea {
+  font-family: Courier New, Courier, monospace;
+  width: 50%;
+}
+h1.title {
+  text-align: center;
+}
+.menu-screen {
+  width: 100%;
+  text-align: center;
+  margin-top: 40px;
+}
+.play-screen {
+  width: 100%;
+  text-align: center;
+}
+.play-screen.preview button {
+  display: none;
+}
+.play-screen.preview canvas {
+  width: 50%;
+}
+.play-screen canvas {
+  width: 100%;
+}
+
+@media screen and (min-width: 750px) {
+  .play-screen, .menu-scren {
+    width: 50%;
+    margin-left: 25%;
+  }
+}
